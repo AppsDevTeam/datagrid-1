@@ -1638,9 +1638,10 @@ class DataGrid extends Nette\Application\UI\Control
 	/**
 	 * @param  Nette\Forms\Container  $container
 	 * @param  array|\Iterator  $values
+	 * @param  Nette\Forms\IControl|NULL  $rootControl  Filled only if used recursively. It contains component in top container. We need it for setting default values of DateRangeFilter.
 	 * @return void
 	 */
-	public function setFilterContainerDefaults(Nette\Forms\Container $container, $values)
+	public function setFilterContainerDefaults(Nette\Forms\Container $container, $values, $rootControl = NULL)
 	{
 		foreach ($container->getComponents() as $key => $control) {
 			if (!isset($values[$key])) {
@@ -1648,14 +1649,14 @@ class DataGrid extends Nette\Application\UI\Control
 			}
 
 			if ($control instanceof Nette\Forms\Container) {
-				$this->setFilterContainerDefaults($control, $values[$key]);
+				$this->setFilterContainerDefaults($control, $values[$key], $rootControl ?: $control);
 
 				continue;
 			}
 
 			$value = $values[$key];
 
-			if ($value instanceof \DateTime && ($filter = $this->getFilter($key)) instanceof IFilterDate) {
+			if ($value instanceof \DateTime && ($filter = $this->getFilter(($rootControl ?: $control)->getName())) instanceof IFilterDate) {
 				$value = $value->format($filter->getPhpFormat());
 			}
 
